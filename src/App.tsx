@@ -641,8 +641,14 @@ export default function App() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { name: "MUBASHIR TAZIM", role: "Event Lead", seed: "mubashir" },
               { name: "R TAZIM SHERIFF", role: "Event Lead", img: "/input_file_14.png" },
+              { name: "J.MUKESHWAR RAUDRA (P r o f e s s o r)", role: "Co-Lead", img: "/input_file_15.png" },
+              { name: "GIRIPRASAD K", role: "Co-Lead", img: "/input_file_16.png" },
+              { name: "JAYASRI S", role: "Documentation Lead", img: "/input_file_17.png" },
+              { name: "PRINCE KEVIN KARTHIK.I", role: "Event Speaker Manager", img: "/input_file_18.png" },
+              { name: "HARSHA VARDHINI R", role: "Event Speaker Management", img: "/input_file_19.png" },
+              { name: "PRIYANGA RADHAKRISHNAN", role: "Design Team", img: "/input_file_20.png" },
+              { name: "PULI PHANINDRA", role: "Community Partners Team", img: "/input_file_21.png" },
               { name: "SARAH JANE", role: "Tech Operations", seed: "sarah" },
               { name: "VIKRAM SINGH", role: "Creative Director", seed: "vikram" },
               { name: "ANANYA RAO", role: "Community Manager", seed: "ananya" },
