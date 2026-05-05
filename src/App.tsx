@@ -1,0 +1,862 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  Calendar, 
+  MapPin, 
+  Clock, 
+  Users, 
+  Zap, 
+  Code, 
+  ChevronRight, 
+  Mail, 
+  Github, 
+  Twitter, 
+  Linkedin,
+  MessageSquare,
+  ArrowRight,
+  ArrowLeft,
+  ExternalLink,
+  CheckCircle2,
+  Mic2,
+  Terminal,
+  Trophy
+} from 'lucide-react';
+
+// --- Types ---
+interface Session {
+  name: string;
+  time: string;
+  link: string;
+  type: 'SPEAKER' | 'WORKSHOP' | 'CONTEST';
+  speakerImg?: string;
+}
+
+interface Track {
+  id: number;
+  name: string;
+  color: string;
+  textColor: string;
+  sessions: Session[];
+}
+
+const TRACKS_FLOW: Track[] = [
+  {
+    id: 1,
+    name: 'TRACK 1',
+    color: 'border-red-500',
+    textColor: 'text-red-500',
+    sessions: [
+      { name: 'Keerthana K - Data Structures Review', time: '10:00 AM - 11:00 AM', link: 'https://tinyurl.com/CSF-Track-1-Speaker-1', type: 'SPEAKER' },
+      { name: 'Bharanivelan - Portfolio Building', time: '11:10 AM - 12:30 PM', link: 'https://tinyurl.com/CSF-Track-1-Contest', type: 'CONTEST' },
+      { name: 'Subashini Mannuraj - Product R&D', time: '3:30 PM - 4:30 PM', link: 'https://tinyurl.com/CSF-Track-1-Speaker-2', type: 'SPEAKER' },
+      { name: 'Velayutham TN - Resume Workshop', time: '4:40 PM - 5:30 PM', link: 'https://tinyurl.com/CSF-Track-1-Workshop', type: 'WORKSHOP' },
+    ]
+  },
+  {
+    id: 2,
+    name: 'TRACK 2',
+    color: 'border-blue-500',
+    textColor: 'text-blue-500',
+    sessions: [
+      { name: 'Abinesh Magudeeswaran - Introduction to Machine Learning', time: '10:00 AM - 11:00 AM', link: 'https://tinyurl.com/CSF-Track-2-Speaker-1', type: 'SPEAKER' },
+      { name: 'Kevin DS - UI/UX Designing', time: '11:10 AM - 12:10 PM', link: 'https://tinyurl.com/CSF-Track-2-Workshop', type: 'WORKSHOP' },
+      { name: 'Gurmannat Kaur - AI Trends', time: '3:00 PM - 4:00 PM', link: 'https://tinyurl.com/CSF-Track-2-Speaker-2', type: 'SPEAKER' },
+      { name: 'Akash D - Soft Skills', time: '4:10 PM - 5:30 PM', link: 'https://tinyurl.com/CSF-Track-2-Contest', type: 'CONTEST' },
+    ]
+  },
+  {
+    id: 3,
+    name: 'TRACK 3',
+    color: 'border-green-500',
+    textColor: 'text-green-500',
+    sessions: [
+      { name: 'Subiksha A - OS and Networks', time: '10:00 AM - 11:00 AM', link: 'https://tinyurl.com/CSF-Track-3-Speaker-1', type: 'SPEAKER' },
+      { name: 'Subikeesh M - E-SIM Simulation Workshop', time: '11:10 AM - 12:10 PM', link: 'https://tinyurl.com/CSF-Track-3-Workshop', type: 'WORKSHOP' },
+      { name: 'Haritha Sivasankaran - Clean Code and Refactoring', time: '3:00 PM - 4:30 PM', link: 'https://tinyurl.com/CSF-Track-3-Contest', type: 'CONTEST' },
+      { name: 'Lochan Pokali - DBMS Essential', time: '4:40 PM - 5:30 PM', link: 'https://tinyurl.com/CSF-Track-3-Speaker-2', type: 'SPEAKER' },
+    ]
+  }
+];
+
+// --- Components ---
+
+const TypeIcon = ({ type }: { type: Session['type'] }) => {
+  switch (type) {
+    case 'SPEAKER': return <Mic2 size={12} className="text-brand-green" />;
+    case 'WORKSHOP': return <Terminal size={12} className="text-brand-green" />;
+    case 'CONTEST': return <Trophy size={12} className="text-brand-green" />;
+    default: return null;
+  }
+};
+
+const Stars = () => {
+  return (
+    <div className="stars-container">
+      {[...Array(100)].map((_, i) => (
+        <div 
+          key={i} 
+          className="star" 
+          style={{ 
+            left: `${Math.random() * 100}%`, 
+            top: `${Math.random() * 100}%`, 
+            width: `${Math.random() * 2 + 1}px`, 
+            height: `${Math.random() * 2 + 1}px`,
+            '--duration': `${Math.random() * 3 + 2}s`
+          } as any} 
+        />
+      ))}
+    </div>
+  );
+};
+
+const Countdown = () => {
+  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
+    days: 0, hours: 0, minutes: 0, seconds: 0
+  });
+
+  useEffect(() => {
+    const targetDate = new Date('2026-05-10T10:00:00');
+    
+    const timer = setInterval(() => {
+      const now = new Date();
+      const difference = targetDate.getTime() - now.getTime();
+      
+      const d = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const h = Math.floor((difference / (1000 * 60 * 60)) % 24);
+      const m = Math.floor((difference / 1000 / 60) % 60);
+      const s = Math.floor((difference / 1000) % 60);
+      
+      setTimeLeft({ days: d, hours: h, minutes: m, seconds: s });
+      
+      if (difference < 0) clearInterval(timer);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const TimeUnit = ({ label, value }: { label: string; value: number }) => (
+    <div className="flex flex-col items-center">
+      <div className="text-3xl md:text-5xl font-mono font-bold">
+        {value.toString().padStart(2, '0')}
+      </div>
+      <div className="text-[8px] uppercase tracking-[0.2em] text-black/50 font-bold">{label}</div>
+    </div>
+  );
+
+  return (
+    <div className="flex gap-4 md:gap-8 bg-brand-green text-black px-8 py-6 border-l-8 border-white">
+      <TimeUnit label="Days" value={timeLeft.days} />
+      <div className="text-2xl mt-2 text-black/20 font-bold">:</div>
+      <TimeUnit label="Hours" value={timeLeft.hours} />
+      <div className="text-2xl mt-2 text-black/20 font-bold">:</div>
+      <TimeUnit label="Minutes" value={timeLeft.minutes} />
+    </div>
+  );
+};
+
+const Tag = ({ type }: { type: string }) => {
+  return (
+    <span className="px-3 py-1 text-[9px] font-mono font-bold uppercase tracking-widest bg-brand-green text-black">
+      {type}
+    </span>
+  );
+};
+
+export default function App() {
+  const [view, setView] = useState<'home' | 'select-path' | 'track-agenda'>('home');
+  const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null);
+  const [activeTrackShift, setActiveTrackShift] = useState<number>(1); // For the legacy schedule section
+
+  const selectedTrack = selectedTrackId ? TRACKS_FLOW.find(t => t.id === selectedTrackId) : null;
+
+  const navigateToHome = () => setView('home');
+  const navigateToSelectPath = () => {
+    setView('select-path');
+    window.scrollTo(0, 0);
+  };
+  const navigateToTrackAgenda = (id: number) => {
+    setSelectedTrackId(id);
+    setView('track-agenda');
+    window.scrollTo(0, 0);
+  };
+
+  const navLinks = [
+    { label: 'HOME', href: '#home', action: navigateToHome },
+    { label: 'TRACKS', href: '#schedule' },
+    { label: 'AGENDA', href: '#schedule' },
+    { label: 'COMMUNITY', href: '#social' },
+  ];
+
+  if (view === 'select-path') {
+    return (
+      <div className="min-h-screen bg-brand-black text-white font-sans overflow-x-hidden relative">
+        <Stars />
+        <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 flex justify-between items-center bg-brand-black/20 backdrop-blur-md border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <img src="input_file_5.png" alt="CSF Logo" className="w-10 h-10 object-contain" referrerPolicy="no-referrer" />
+            <div className="flex flex-col">
+              <span className="font-display font-black text-xl tracking-tighter leading-none text-white">CODESAPIENS</span>
+              <span className="text-[8px] font-mono text-brand-green tracking-[0.3em] font-bold uppercase">SUMMER FEST '26</span>
+            </div>
+          </div>
+          <div className="hidden md:flex gap-10 text-[10px] font-mono uppercase tracking-[0.2em] text-white/40">
+             {navLinks.map(link => (
+               <button key={link.label} onClick={() => { navigateToHome(); if(link.label !== 'HOME') window.location.hash = link.href; }} className="hover:text-brand-green transition-colors uppercase">{link.label}</button>
+             ))}
+          </div>
+          <button className="border border-purple-500 text-purple-400 px-6 py-2 font-black text-[10px] uppercase tracking-widest">
+            REGISTERED
+          </button>
+        </nav>
+
+        <section className="pt-40 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center">
+          <button 
+            onClick={navigateToHome}
+            className="self-start flex items-center gap-2 text-white/40 hover:text-white transition-colors font-mono text-[10px] uppercase tracking-widest mb-12"
+          >
+            <ArrowLeft size={14} /> BACK TO HOME
+          </button>
+
+          <h1 className="text-4xl md:text-7xl font-display font-black tracking-tighter text-center mb-4">
+             <span className="text-brand-cyan glow-text italic">SELECT YOUR PATH</span>
+          </h1>
+          <p className="text-white/40 font-mono text-sm uppercase tracking-widest text-center mb-20">
+             CHOOSE A TRACK TO VIEW SCHEDULE
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl">
+            {TRACKS_FLOW.map(track => (
+              <motion.div
+                key={track.id}
+                whileHover={{ y: -10 }}
+                onClick={() => navigateToTrackAgenda(track.id)}
+                className={`p-1 border-2 ${track.color} rounded-2xl cursor-pointer bg-black/40 backdrop-blur-sm group h-96 flex flex-col items-center justify-center relative overflow-hidden`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <h2 className={`text-4xl md:text-5xl font-display font-black mb-4 ${track.textColor}`}>{track.name}</h2>
+                <span className="text-white/40 font-mono text-[10px] uppercase tracking-widest group-hover:text-white transition-colors">VIEW EVENTS</span>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (view === 'track-agenda' && selectedTrack) {
+    return (
+      <div className="min-h-screen bg-brand-black text-white font-sans overflow-x-hidden relative">
+        <Stars />
+        <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 flex justify-between items-center bg-brand-black/20 backdrop-blur-md border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <img src="input_file_5.png" alt="CSF Logo" className="w-10 h-10 object-contain" referrerPolicy="no-referrer" />
+            <div className="flex flex-col">
+              <span className="font-display font-black text-xl tracking-tighter leading-none text-white">CODESAPIENS</span>
+              <span className="text-[8px] font-mono text-brand-green tracking-[0.3em] font-bold uppercase">SUMMER FEST '26</span>
+            </div>
+          </div>
+          <div className="hidden md:flex gap-10 text-[10px] font-mono uppercase tracking-[0.2em] text-white/40">
+             {navLinks.map(link => (
+               <button key={link.label} onClick={() => { navigateToHome(); if(link.label !== 'HOME') window.location.hash = link.href; }} className="hover:text-brand-green transition-colors uppercase">{link.label}</button>
+             ))}
+          </div>
+          <button className="border border-purple-500 text-purple-400 px-6 py-2 font-black text-[10px] uppercase tracking-widest">
+            REGISTERED
+          </button>
+        </nav>
+
+        <section className="pt-40 pb-20 px-6 max-w-4xl mx-auto flex flex-col items-center min-h-screen">
+          <button 
+            onClick={navigateToSelectPath}
+            className="self-start flex items-center gap-2 text-white/40 hover:text-white transition-colors font-mono text-[10px] uppercase tracking-widest mb-16"
+          >
+            <ArrowLeft size={14} /> BACK TO TRACKS
+          </button>
+
+          <div className="w-full text-center mb-16">
+            <h1 className={`text-6xl md:text-8xl font-display font-black tracking-tighter mb-4 ${selectedTrack.textColor}`}>
+               {selectedTrack.name}
+            </h1>
+            <div className={`h-1 w-24 mx-auto mb-8 bg-current ${selectedTrack.textColor}`} />
+            <p className="text-white/40 font-mono text-xs uppercase tracking-widest">
+               Click on an event to proceed with registration.
+            </p>
+          </div>
+
+          <div className="w-full space-y-4">
+            {selectedTrack.sessions.map((session, i) => (
+              <motion.a
+                key={i}
+                href={session.link}
+                target="_blank"
+                rel="noreferrer"
+                whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.05)' }}
+                className="w-full p-6 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between group transition-all"
+              >
+                <div className="flex items-center gap-6">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-4 text-brand-cyan font-mono text-[10px]">
+                            <div className="flex items-center gap-2">
+                              <Clock size={14} />
+                              {session.time}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <TypeIcon type={session.type} />
+                              <span className="text-brand-green font-bold tracking-widest px-2 py-0.5 border border-brand-green/30 rounded uppercase">
+                                {session.type}
+                              </span>
+                            </div>
+                          </div>
+                          <h3 className="text-xl md:text-3xl font-display font-bold leading-tight group-hover:text-brand-green transition-colors">
+                            {session.name}
+                          </h3>
+                        </div>
+                </div>
+                <ExternalLink size={20} className="text-white/20 group-hover:text-white transition-colors" />
+              </motion.a>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-brand-black overflow-x-hidden font-sans">
+      <Stars />
+      
+      {/* Nav */}
+      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 flex justify-between items-center bg-brand-black/20 backdrop-blur-md border-b border-white/5">
+        <div className="flex items-center gap-3">
+          <img src="input_file_5.png" alt="CSF Logo" className="w-10 h-10 object-contain" referrerPolicy="no-referrer" />
+          <div className="flex flex-col">
+            <span className="font-display font-black text-xl tracking-tighter leading-none text-white">CODESAPIENS</span>
+            <span className="text-[8px] font-mono text-brand-green tracking-[0.3em] font-bold uppercase">SUMMER FEST '26</span>
+          </div>
+        </div>
+        
+        <div className="hidden md:flex gap-10 text-[10px] font-mono uppercase tracking-[0.2em] text-white/40">
+          <a href="#home" className="hover:text-brand-green transition-colors">HOME</a>
+          <a href="#schedule" className="hover:text-brand-green transition-colors">TRACKS</a>
+          <a href="#schedule" className="hover:text-brand-green transition-colors">AGENDA</a>
+          <a href="#social" className="hover:text-brand-green transition-colors">COMMUNITY</a>
+        </div>
+        
+        <div className="flex items-center gap-6">
+          <div className="hidden lg:flex flex-col items-end">
+            <span className="text-[9px] font-mono font-bold text-white uppercase">Google Student</span>
+            <span className="text-[8px] font-mono text-white/40 uppercase">Ambassador</span>
+          </div>
+          <button 
+            onClick={navigateToSelectPath}
+            className="border border-purple-500 text-purple-400 px-6 py-2 font-black text-[10px] uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+            REGISTER
+          </button>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section id="home" className="relative h-screen flex flex-col items-center justify-center px-6 overflow-hidden pt-20">
+        <div className="absolute inset-0 bg-radial-gradient from-brand-green/10 to-transparent pointer-events-none" />
+        
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1 }}
+          className="relative w-48 h-48 md:w-64 md:h-64 mb-12 flex items-center justify-center p-4"
+        >
+          {/* Animated glow background */}
+          <div className="absolute inset-0 bg-brand-green/20 blur-[60px] rounded-full animate-pulse" />
+          <img 
+            src="input_file_5.png" 
+            alt="CSF" 
+            className="w-full h-full object-contain relative z-10 filter drop-shadow-[0_0_30px_rgba(0,255,0,0.5)]" 
+            referrerPolicy="no-referrer"
+          />
+        </motion.div>
+
+        <div className="text-center space-y-6 relative z-10 mb-12">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-4xl md:text-5xl font-display font-black leading-none tracking-tight text-white/40 mb-4 uppercase"
+          >
+            CODESAPIENS
+          </motion.h1>
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-6xl md:text-[8rem] font-display font-black leading-none tracking-tight text-white flex flex-col items-center"
+          >
+            <span className="flex items-center gap-2">SUMMER <img src="input_file_5.png" className="w-12 md:w-20 h-auto animate-spin-slow filter grayscale invert" alt="logo" referrerPolicy="no-referrer" /></span>
+            <span className="text-brand-green italic">FEST '26</span>
+          </motion.h1>
+
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-white/40 text-lg md:text-xl font-mono tracking-widest uppercase"
+          >
+            Explore. Evolve. Engineer. // The Student Community.
+          </motion.p>
+        </div>
+
+        {/* Info Bar */}
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="flex flex-wrap items-center justify-center gap-8 md:gap-12 bg-black/40 backdrop-blur-xl border border-white/10 px-8 py-4 rounded-2xl mb-12"
+        >
+          <div className="flex items-center gap-3">
+            <Zap size={16} className="text-brand-cyan" />
+            <span className="text-xs font-mono font-bold tracking-widest uppercase">3 Tracks</span>
+          </div>
+          <div className="h-4 w-[1px] bg-white/10 hidden md:block" />
+          <div className="flex items-center gap-3">
+            <Code size={16} className="text-brand-green" />
+            <span className="text-xs font-mono font-bold tracking-widest uppercase">12 Events</span>
+          </div>
+          <div className="h-4 w-[1px] bg-white/10 hidden md:block" />
+          <div className="flex items-center gap-3">
+            <Clock size={16} className="text-brand-green" />
+            <span className="text-xs font-mono font-bold tracking-widest uppercase">10:00 AM - 8:30 PM</span>
+          </div>
+          <div className="h-4 w-[1px] bg-white/10 hidden md:block" />
+          <div className="flex items-center gap-3">
+            <Calendar size={16} className="text-brand-green" />
+            <span className="text-xs font-mono font-bold tracking-widest uppercase">MAY 10, 2026</span>
+          </div>
+        </motion.div>
+
+        <motion.button 
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={navigateToSelectPath}
+          className="cyber-button text-sm px-12 py-5 border-2 relative group overflow-hidden"
+        >
+          <span className="relative z-10 font-black">JOIN THE REBOOT</span>
+          <div className="absolute inset-0 bg-brand-cyan/20 translate-y-full group-hover:translate-y-0 transition-transform" />
+        </motion.button>
+
+        {/* Floating background elements for animations */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-40">
+          <ArrowRight size={24} className="rotate-90 text-brand-green" />
+        </div>
+      </section>
+
+      {/* Stats/Countdown Mini */}
+      <section className="py-12 bg-black flex justify-center">
+        <Countdown />
+      </section>
+
+      {/* System Diagnostics Section */}
+      <section className="py-24 px-6 max-w-7xl mx-auto border-t border-white/10 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          {/* Left Column: Text Content */}
+          <div className="lg:col-span-7 space-y-8">
+            <div>
+              <motion.h2 
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="text-5xl md:text-7xl font-display font-black tracking-tighter leading-none mb-4"
+              >
+                SYSTEM <br/> 
+                <span className="text-stroke text-white group-hover:text-brand-cyan transition-colors">DIAGNOSTICS</span>
+              </motion.h2>
+              <div className="monospace-label">// ABOUT CODESAPIENS SUMMER FEST</div>
+            </div>
+
+            <div className="space-y-6 text-white/60 leading-relaxed text-sm md:text-md">
+              <p>
+                <span className="text-brand-green font-black uppercase tracking-widest mr-2">INITIATING SUMMER PROTOCOL...</span>
+                CodeSapiens Summer Fest is now live. This isn’t just another online event—it’s a convergence of builders, thinkers, and creators pushing the boundaries of technology. A digital arena where ideas compile into impact.
+              </p>
+              <p>
+                We’ve engineered a <span className="text-white font-bold">fully online immersive experience</span> designed to challenge, inspire, and elevate. From AI and development to product thinking and problem-solving, every domain is activated—no limits, no borders.
+              </p>
+              
+              <div className="pl-6 border-l-4 border-purple-500 py-2 italic font-mono text-white/80 bg-white/5">
+                “Our objective is clear: Build, break, learn, and evolve. Leave with skills that outlast the event.”
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Cards Grid */}
+          <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className="terminal-card p-6 border-brand-cyan/20 group h-full"
+            >
+              <div className="text-brand-cyan mb-4 group-hover:scale-110 transition-transform">
+                <ChevronRight size={24} strokeWidth={3} />
+              </div>
+              <h3 className="text-xl font-display font-black mb-2 uppercase italic">Speaking</h3>
+              <p className="text-[10px] text-white/40 leading-relaxed">
+                <span className="text-white font-bold block mb-1">10+ Expert Sessions</span>
+                Insights from industry leaders, founders, and innovators shaping the future.
+              </p>
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className="terminal-card p-6 border-purple-500/20 group h-full"
+            >
+              <div className="text-purple-500 mb-4 group-hover:scale-110 transition-transform">
+                <Users size={24} strokeWidth={2} />
+              </div>
+              <h3 className="text-xl font-display font-black mb-2 uppercase italic">Contests</h3>
+              <p className="text-[10px] text-white/40 leading-relaxed">
+                <span className="text-white font-bold block mb-1">Coding Battles</span>
+                Compete in high-intensity problem-solving rounds designed to test both logic and creativity.
+              </p>
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className="terminal-card p-6 border-brand-green/20 group h-full"
+            >
+              <div className="text-brand-green mb-4 group-hover:scale-110 transition-transform">
+                <Zap size={24} strokeWidth={2} />
+              </div>
+              <h3 className="text-xl font-display font-black mb-2 uppercase italic">Workshops</h3>
+              <p className="text-[10px] text-white/40 leading-relaxed">
+                <span className="text-white font-bold block mb-1">8 Hands-on Labs</span>
+                Build real-world projects guided by mentors and experts.
+              </p>
+            </motion.div>
+
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className="terminal-card p-6 border-white/20 group h-full bg-gradient-to-br from-brand-cyan/5 to-purple-500/5"
+            >
+              <h3 className="text-4xl font-display font-black mb-1 group-hover:text-brand-cyan transition-colors">100%</h3>
+              <div className="text-xs font-mono font-black text-brand-green tracking-[0.3em] uppercase mb-4">ONLINE</div>
+              <p className="text-[10px] text-white/40 leading-relaxed italic">
+                Participate from anywhere. All you need is a device and ambition.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Schedule / Timeline */}
+      <section id="schedule" className="py-24 px-6 max-w-7xl mx-auto border-t border-white/10 relative">
+        <div className="absolute inset-0 grid-bg opacity-20 pointer-events-none" />
+        
+        <div className="relative z-10">
+          <div className="flex flex-col items-center text-center mb-16">
+            <div className="monospace-label mb-2 uppercase">// Terminal Access // Live Agenda</div>
+            <h2 className="text-5xl md:text-7xl font-display font-black tracking-tighter mb-12">
+              EVENT <span className="text-brand-green italic">SCHEDULE</span>
+            </h2>
+            
+            {/* Shift Tabs */}
+            <div className="flex gap-12 border-b border-white/10 w-full justify-center">
+              {['Morning', 'Evening'].map((shift) => (
+                <button
+                  key={shift}
+                  onClick={() => setActiveTrackShift(shift === 'Morning' ? 1 : 2)}
+                  className={`pb-4 px-6 text-sm font-mono font-bold tracking-[0.2em] uppercase transition-all cursor-pointer ${
+                    (activeTrackShift === 1 && shift === 'Morning') || (activeTrackShift === 2 && shift === 'Evening') 
+                    ? 'border-b-2 border-brand-cyan text-white' 
+                    : 'text-white/20 hover:text-white/40'
+                  }`}
+                >
+                  {shift}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {TRACKS_FLOW.map((track) => {
+              const sessions = activeTrackShift === 1 ? track.sessions.slice(0, 2) : track.sessions.slice(2);
+              return (
+                <div key={track.id} className="space-y-6">
+                  {sessions.map((session, idx) => (
+                    <motion.div
+                      key={`${track.id}-${idx}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.1 }}
+                      onClick={() => navigateToTrackAgenda(track.id)}
+                      className={`terminal-card p-6 border-t-2 relative group overflow-hidden cursor-pointer ${
+                         track.id === 1 ? 'border-t-brand-green' : track.id === 2 ? 'border-t-purple-500' : 'border-t-brand-cyan'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-6">
+                        <Tag type="Session" />
+                        <span className={`track-pill track-pill-${track.id}`}>T{track.id}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 text-[10px] font-mono text-white/40 mb-3">
+                        <Clock size={12} className="text-brand-green" />
+                        <span>{session.time}</span>
+                      </div>
+                      
+                      <h4 className="text-2xl font-display font-black leading-tight mb-4 group-hover:text-brand-green transition-colors">
+                        {session.name}
+                      </h4>
+                      
+                      <p className="text-[10px] text-white/40 leading-relaxed mb-6">
+                        Engaging hands-on session focusing on the core principles and architecture of {session.name}.
+                      </p>
+
+                      <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                         <div className="flex items-center gap-2">
+                            <TypeIcon type={session.type} />
+                            <span className="text-[10px] font-bold text-brand-green tracking-widest">
+                               {session.type}
+                            </span>
+                         </div>
+                         <ChevronRight size={14} className="text-white/20 group-hover:text-brand-green group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Volunteer Nexus Section */}
+      <section id="nexus" className="py-24 px-6 border-t border-white/10 bg-black relative overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col items-center text-center mb-20">
+            <div className="monospace-label mb-2 uppercase">// Core Contributors // The Nexus</div>
+            <h2 className="text-5xl md:text-8xl font-display font-black tracking-tighter">
+              THE <span className="text-brand-green italic">NEXUS</span>
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              { name: "MUBASHIR TAZIM", role: "Event Lead", seed: "mubashir" },
+              { name: "R TAZIM SHERIFF", role: "Event Lead", img: "/input_file_14.png" },
+              { name: "SARAH JANE", role: "Tech Operations", seed: "sarah" },
+              { name: "VIKRAM SINGH", role: "Creative Director", seed: "vikram" },
+              { name: "ANANYA RAO", role: "Community Manager", seed: "ananya" },
+              { name: "ROHIT KUMAR", role: "Web Developer", seed: "rohit" },
+              { name: "LISA CHEN", role: "Content Curator", seed: "lisa" },
+              { name: "DAVID MILLER", role: "Public Relations", seed: "david" },
+              { name: "SOFIA KHAN", role: "Sponsorships", seed: "sofia" }
+            ].map((volunteer, i) => (
+              <motion.div 
+                key={i}
+                whileHover={{ y: -10 }}
+                className="group relative"
+              >
+                <div className="aspect-[4/5] bg-white/5 border border-white/10 overflow-hidden mb-4 grayscale group-hover:grayscale-0 transition-all duration-700 relative">
+                   <div className="absolute inset-0 bg-brand-green/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <img 
+                    src={'img' in volunteer ? volunteer.img : `https://api.dicebear.com/7.x/avataaars/svg?seed=${volunteer.seed}`} 
+                    alt={volunteer.name} 
+                    className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transform group-hover:scale-110 transition-all duration-700" 
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+                <div className="flex justify-between items-end">
+                  <div>
+                    <h3 className="font-display font-bold text-lg leading-tight uppercase group-hover:text-brand-green transition-colors">{volunteer.name}</h3>
+                    <p className="font-mono text-[8px] text-white/40 tracking-widest uppercase mt-1">{volunteer.role}</p>
+                  </div>
+                  <span className="text-[10px] font-mono text-white/10 font-black">0{i+1}</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Sponsors */}
+      <section id="sponsors" className="py-24 bg-white/5 border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-16 gap-8">
+            <div className="monospace-label">// SYSTEM_SUPPORTERS //</div>
+            <h2 className="text-4xl font-display font-black tracking-tighter uppercase">COMMUNITY <span className="text-brand-green italic">PARTNERS</span></h2>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-[1px] bg-white/10 border border-white/10">
+            {[
+              { name: 'Google Student Ambassador', img: '/input_file_11.png' },
+              { name: 'Namma Flutter', img: '/input_file_12.png' },
+              { name: 'Exora', img: '/input_file_13.png' }
+            ].map((partner, i) => (
+              <div 
+                key={i} 
+                className="h-40 bg-brand-black flex items-center justify-center p-8 transition-all duration-300 group cursor-crosshair border border-white/5"
+              >
+                <img 
+                  src={partner.img} 
+                  alt={partner.name} 
+                  className="max-w-full max-h-full object-contain grayscale opacity-60 group-hover:opacity-100 group-hover:grayscale-0 transition-all scale-110" 
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Neural Network Section */}
+      <section id="social" className="py-24 px-6 border-t border-white/10 bg-black">
+        <div className="max-w-7xl mx-auto text-center mb-16">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-4"
+          >
+            <h2 className="text-4xl md:text-6xl font-display font-black tracking-tighter">
+              JOIN THE <span className="text-brand-green italic">NEURAL NETWORK</span>
+            </h2>
+            <p className="text-white/40 max-w-2xl mx-auto text-sm md:text-base font-medium">
+              Connect with 5000+ developers, designers, and innovators in our official community. 
+              Follow the hashtag <span className="text-brand-green">#CodeSapiens26</span>
+            </p>
+          </motion.div>
+        </div>
+
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { 
+              name: 'LinkedIn', 
+              label: 'Connect', 
+              icon: <Linkedin size={32} />, 
+              color: 'text-blue-400', 
+              hoverBorder: 'hover:border-blue-500/50',
+              link: 'https://www.linkedin.com/company/codesapiens-community/'
+            },
+            { 
+              name: 'Website', 
+              label: 'Explore', 
+              icon: <Code size={32} />, 
+              color: 'text-brand-green', 
+              hoverBorder: 'hover:border-brand-green/50',
+              link: 'https://www.codesapiens.in/'
+            },
+            { 
+              name: 'Instagram', 
+              label: 'Follow Us', 
+              icon: <Users size={32} />, 
+              color: 'text-pink-500', 
+              hoverBorder: 'hover:border-pink-500/50',
+              link: 'https://www.instagram.com/codesapiens.in/'
+            }
+          ].map((social, i) => (
+            <motion.a 
+              key={i}
+              href={social.link}
+              target="_blank"
+              rel="noreferrer"
+              whileHover={{ y: -5 }}
+              className={`terminal-card p-12 flex flex-col items-center justify-center gap-6 group transition-all duration-500 ${social.hoverBorder}`}
+            >
+              <div className={`${social.color} opacity-40 group-hover:opacity-100 transition-opacity`}>
+                {social.icon}
+              </div>
+              <div className="text-center">
+                <h3 className="text-2xl font-display font-bold mb-2 uppercase tracking-tight">{social.name}</h3>
+                <div className={`flex items-center gap-2 text-[10px] font-mono font-black uppercase tracking-[0.2em] ${social.color} opacity-60 group-hover:opacity-100 transition-opacity`}>
+                  {social.label} <ArrowRight size={12} />
+                </div>
+              </div>
+            </motion.a>
+          ))}
+        </div>
+      </section>
+
+
+
+      {/* Registration Pre-footer Section */}
+      <section className="py-24 px-6 bg-black flex flex-col items-center justify-center text-center">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="space-y-6 max-w-4xl"
+        >
+          <div className="inline-block bg-red-600 text-white font-mono text-[10px] font-black uppercase tracking-[0.2em] px-4 py-1 rounded">
+             FINAL CALL
+          </div>
+          <h2 className="text-5xl md:text-8xl font-display font-black tracking-tight text-brand-cyan">
+             REGISTRATION
+          </h2>
+          <p className="text-white/60 text-sm md:text-md font-medium tracking-wide">
+             This is your last chance to be part of the Google Student Ambassadors history. <br/>
+             Registration closes in <span className="text-pink-500 font-bold">48 hours.</span>
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white/5 border border-white/10 p-12 rounded-3xl mt-12 text-left">
+             <div className="space-y-4">
+               {[
+                 'Access to all 12 Sessions',
+                 'Special Event access',
+                 'Participation Certificate'
+               ].map((item, i) => (
+                 <div key={i} className="flex items-center gap-3">
+                    <CheckCircle2 size={24} className="text-brand-green" />
+                    <span className="text-white/80 font-medium">{item}</span>
+                 </div>
+               ))}
+             </div>
+             <div className="space-y-4">
+               {[
+                 'Career Networking Session',
+                 'Contest Entry Eligibility'
+               ].map((item, i) => (
+                 <div key={i} className="flex items-center gap-3">
+                    <CheckCircle2 size={24} className="text-brand-green" />
+                    <span className="text-white/80 font-medium">{item}</span>
+                 </div>
+               ))}
+             </div>
+
+             <div className="col-span-full pt-12 flex flex-col items-center gap-4">
+               <button 
+                 onClick={navigateToSelectPath}
+                 className="w-full max-w-md border-2 border-brand-cyan text-brand-cyan py-5 font-display font-black text-xl tracking-tight hover:bg-brand-cyan hover:text-black transition-all"
+               >
+                 START REGISTRATION
+               </button>
+               <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest text-center">
+                 By registering, you agree to our Terms of Service. No spam, just code.
+               </span>
+             </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 px-6 border-t border-white/5 bg-brand-black">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-[9px] font-mono tracking-widest uppercase text-white/40">
+           <div className="flex items-center gap-4">
+             <img src="input_file_5.png" alt="" className="w-8 h-8 object-contain opacity-50 grayscale" referrerPolicy="no-referrer" />
+             <span className="text-brand-green font-bold">Terminal_v2.5</span>
+             <span>// Codesapiens System Execution (c) 2026</span>
+           </div>
+           
+           <div className="flex gap-8">
+             <a href="#" className="hover:text-brand-green transition-colors">X_Twitter</a>
+             <a href="#" className="hover:text-brand-green transition-colors">Discord_Server</a>
+             <a href="#" className="hover:text-brand-green transition-colors">Github_Repo</a>
+           </div>
+
+           <div className="text-right">
+             Syntax Error? 0x000FF_OK
+           </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
