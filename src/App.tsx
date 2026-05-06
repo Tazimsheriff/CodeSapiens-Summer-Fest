@@ -799,7 +799,8 @@ export default function App() {
               { name: "PRIYANGA RADHAKRISHNAN", role: "Design Team", img: "https://i.ibb.co/KxVT5jXm/Priyanga.jpg", linkedin: "https://www.linkedin.com/in/priyanga-radhakrishnan-53b505380?utm_source=share_via&utm_content=profile&utm_medium=member_android" },
               { name: "PULI PHANINDRA", role: "Community Partners Team", img: "https://i.ibb.co/tw4KFD4G/puli-og.jpg", linkedin: "https://www.linkedin.com/in/puli-phanindhra-475ba3375/" },
               { name: "SARVESH S", role: "Event Speaker Manager", img: "https://i.ibb.co/r2QMFLZk/sarvesh-s.jpg", linkedin: "https://www.linkedin.com/in/sarvesh-sivasankaran?utm_source=share_via&utm_content=profile&utm_medium=member_android" },
-              { name: "JOYCESON DANIELRAJ J", role: "Website Handler", img: "https://i.ibb.co/4ZLzM8sx/jd-anna.jpg", linkedin: "" }
+              { name: "JOYCESON DANIELRAJ J", role: "Website Handler", img: "https://i.ibb.co/4ZLzM8sx/jd-anna.jpg", linkedin: "https://www.linkedin.com/in/joyceson-danielraj" },
+              { name: "SHERIN KATHERINA D", role: "DESIGN TEAM", img: "https://i.ibb.co/NdcMC6vV/sherin-akka.jpg", linkedin: "https://www.linkedin.com/in/sherin-katherina-d?utm_source=share_via&utm_content=profile&utm_medium=member_android" }
             ].map((volunteer, i) => (
               <motion.div 
                 key={i}
