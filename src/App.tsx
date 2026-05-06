@@ -140,21 +140,29 @@ const Countdown = () => {
   }, []);
 
   const TimeUnit = ({ label, value }: { label: string; value: number }) => (
-    <div className="flex flex-col items-center">
-      <div className="text-3xl md:text-5xl font-mono font-bold">
+    <div className="flex flex-col items-center px-4 md:px-6 py-6 rounded-lg border border-brand-green/40 bg-black/60 backdrop-blur-sm hover:bg-black/80 transition-all duration-300" 
+         style={{
+           boxShadow: '0 0 20px rgba(57, 255, 20, 0.3), inset 0 0 20px rgba(57, 255, 20, 0.05)'
+         }}>
+      <div className="text-4xl md:text-6xl font-black font-display tracking-tighter mb-2 animate-pulse-glow" 
+           style={{ color: '#39FF14', textShadow: '0 0 10px #39FF14, 0 0 20px rgba(57, 255, 20, 0.5)' }}>
         {value.toString().padStart(2, '0')}
       </div>
-      <div className="text-[8px] uppercase tracking-[0.2em] text-black/50 font-bold">{label}</div>
+      <div className="text-[10px] md:text-[11px] uppercase tracking-[0.3em] text-white/50 font-bold font-mono">
+        {label}
+      </div>
     </div>
   );
 
   return (
-    <div className="flex gap-4 md:gap-8 bg-brand-green text-black px-8 py-6 border-l-8 border-white">
+    <div className="flex items-center justify-center gap-2 md:gap-4 flex-wrap">
       <TimeUnit label="Days" value={timeLeft.days} />
-      <div className="text-2xl mt-2 text-black/20 font-bold">:</div>
+      <div className="text-2xl md:text-4xl font-bold animate-blink" style={{ color: '#39FF14', textShadow: '0 0 10px #39FF14' }}>:</div>
       <TimeUnit label="Hours" value={timeLeft.hours} />
-      <div className="text-2xl mt-2 text-black/20 font-bold">:</div>
+      <div className="text-2xl md:text-4xl font-bold animate-blink" style={{ color: '#39FF14', textShadow: '0 0 10px #39FF14' }}>:</div>
       <TimeUnit label="Minutes" value={timeLeft.minutes} />
+      <div className="text-2xl md:text-4xl font-bold animate-blink" style={{ color: '#39FF14', textShadow: '0 0 10px #39FF14' }}>:</div>
+      <TimeUnit label="Seconds" value={timeLeft.seconds} />
     </div>
   );
 };
@@ -187,7 +195,7 @@ export default function App() {
 
   const navLinks = [
     { label: 'HOME', href: '#home', action: navigateToHome },
-    { label: 'TRACKS', href: '#schedule' },
+    { label: 'TRACKS', href: '#schedule', action: navigateToSelectPath },
     { label: 'AGENDA', href: '#schedule' },
     { label: 'COMMUNITY', href: '#social' },
   ];
@@ -197,8 +205,8 @@ export default function App() {
       <div className="min-h-screen bg-brand-black text-white font-sans overflow-x-hidden relative">
         <Stars />
         <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 flex justify-between items-center bg-brand-black/20 backdrop-blur-md border-b border-white/5">
-          <div className="flex items-center gap-3">
-            <img src="input_file_5.png" alt="CSF Logo" className="w-10 h-10 object-contain" referrerPolicy="no-referrer" />
+          <div className="flex items-center gap-3 cursor-pointer" onClick={navigateToSelectPath}>
+            <img src="/csf-logo.jpg" alt="CSF Logo" className="w-10 h-10 object-contain" referrerPolicy="no-referrer" />
             <div className="flex flex-col">
               <span className="font-display font-black text-xl tracking-tighter leading-none text-white">CODESAPIENS</span>
               <span className="text-[8px] font-mono text-brand-green tracking-[0.3em] font-bold uppercase">SUMMER FEST '26</span>
@@ -206,7 +214,7 @@ export default function App() {
           </div>
           <div className="hidden md:flex gap-10 text-[10px] font-mono uppercase tracking-[0.2em] text-white/40">
              {navLinks.map(link => (
-               <button key={link.label} onClick={() => { navigateToHome(); if(link.label !== 'HOME') window.location.hash = link.href; }} className="hover:text-brand-green transition-colors uppercase">{link.label}</button>
+               <button key={link.label} onClick={() => { 'action' in link && link.action ? link.action() : (link.label !== 'HOME' && (window.location.hash = link.href)); }} className="hover:text-brand-green transition-colors uppercase">{link.label}</button>
              ))}
           </div>
           <button className="border border-purple-500 text-purple-400 px-6 py-2 font-black text-[10px] uppercase tracking-widest">
@@ -253,8 +261,8 @@ export default function App() {
       <div className="min-h-screen bg-brand-black text-white font-sans overflow-x-hidden relative">
         <Stars />
         <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 flex justify-between items-center bg-brand-black/20 backdrop-blur-md border-b border-white/5">
-          <div className="flex items-center gap-3">
-            <img src="input_file_5.png" alt="CSF Logo" className="w-10 h-10 object-contain" referrerPolicy="no-referrer" />
+          <div className="flex items-center gap-3 cursor-pointer" onClick={navigateToHome}>
+            <img src="/csf-logo.jpg" alt="CSF Logo" className="w-10 h-10 object-contain" referrerPolicy="no-referrer" />
             <div className="flex flex-col">
               <span className="font-display font-black text-xl tracking-tighter leading-none text-white">CODESAPIENS</span>
               <span className="text-[8px] font-mono text-brand-green tracking-[0.3em] font-bold uppercase">SUMMER FEST '26</span>
@@ -262,7 +270,7 @@ export default function App() {
           </div>
           <div className="hidden md:flex gap-10 text-[10px] font-mono uppercase tracking-[0.2em] text-white/40">
              {navLinks.map(link => (
-               <button key={link.label} onClick={() => { navigateToHome(); if(link.label !== 'HOME') window.location.hash = link.href; }} className="hover:text-brand-green transition-colors uppercase">{link.label}</button>
+               <button key={link.label} onClick={() => { 'action' in link && link.action ? link.action() : (link.label !== 'HOME' && (window.location.hash = link.href)); }} className="hover:text-brand-green transition-colors uppercase">{link.label}</button>
              ))}
           </div>
           <button className="border border-purple-500 text-purple-400 px-6 py-2 font-black text-[10px] uppercase tracking-widest">
@@ -332,8 +340,8 @@ export default function App() {
       
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 flex justify-between items-center bg-brand-black/20 backdrop-blur-md border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <img src="input_file_5.png" alt="CSF Logo" className="w-10 h-10 object-contain" referrerPolicy="no-referrer" />
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
+            <img src="/csf-logo.jpg" alt="CSF Logo" className="w-10 h-10 object-contain" referrerPolicy="no-referrer" />
           <div className="flex flex-col">
             <span className="font-display font-black text-xl tracking-tighter leading-none text-white">CODESAPIENS</span>
             <span className="text-[8px] font-mono text-brand-green tracking-[0.3em] font-bold uppercase">SUMMER FEST '26</span>
@@ -341,8 +349,8 @@ export default function App() {
         </div>
         
         <div className="hidden md:flex gap-10 text-[10px] font-mono uppercase tracking-[0.2em] text-white/40">
-          <a href="#home" className="hover:text-brand-green transition-colors">HOME</a>
-          <a href="#schedule" className="hover:text-brand-green transition-colors">TRACKS</a>
+          <a href="#home" className="hover:text-brand-green transition-colors cursor-pointer" onClick={(e) => { e.preventDefault(); window.scrollTo(0, 0); }}>HOME</a>
+          <a href="#schedule" className="hover:text-brand-green transition-colors cursor-pointer" onClick={(e) => { e.preventDefault(); navigateToSelectPath(); }}>TRACKS</a>
           <a href="#schedule" className="hover:text-brand-green transition-colors">AGENDA</a>
           <a href="#social" className="hover:text-brand-green transition-colors">COMMUNITY</a>
         </div>
@@ -373,7 +381,7 @@ export default function App() {
           {/* Animated glow background */}
           <div className="absolute inset-0 bg-brand-green/20 blur-[60px] rounded-full animate-pulse" />
           <img 
-            src="input_file_5.png" 
+            src="/csf-logo.jpg" 
             alt="CSF" 
             className="w-full h-full object-contain relative z-10 filter drop-shadow-[0_0_30px_rgba(0,255,0,0.5)]" 
             referrerPolicy="no-referrer"
@@ -393,7 +401,7 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             className="text-6xl md:text-[8rem] font-display font-black leading-none tracking-tight text-white flex flex-col items-center"
           >
-            <span className="flex items-center gap-2">SUMMER <img src="input_file_5.png" className="w-12 md:w-20 h-auto animate-spin-slow filter grayscale invert" alt="logo" referrerPolicy="no-referrer" /></span>
+            <span className="flex items-center gap-2">SUMMER <img src="/csf-logo.jpg" className="w-12 md:w-20 h-auto animate-spin-slow filter grayscale invert" alt="logo" referrerPolicy="no-referrer" /></span>
             <span className="text-brand-green italic">FEST '26</span>
           </motion.h1>
 
@@ -452,8 +460,16 @@ export default function App() {
       </section>
 
       {/* Stats/Countdown Mini */}
-      <section className="py-12 bg-black flex justify-center">
-        <Countdown />
+      <section className="py-16 md:py-24 bg-black flex justify-center items-center">
+        <div className="max-w-6xl w-full px-6 text-center">
+          <div className="mb-12 md:mb-16">
+            <h3 className="text-sm md:text-base font-mono uppercase tracking-[0.3em] text-brand-green mb-4">// SYSTEM INITIALIZATION //</h3>
+            <h2 className="text-3xl md:text-5xl font-display font-black tracking-tighter mb-2">
+              EVENT LAUNCHES IN
+            </h2>
+          </div>
+          <Countdown />
+        </div>
       </section>
 
       {/* System Diagnostics Section */}
@@ -641,14 +657,15 @@ export default function App() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { name: "R TAZIM SHERIFF", role: "Event Lead", img: "/input_file_14.png" },
-              { name: "J.MUKESHWAR RAUDRA (P r o f e s s o r)", role: "Co-Lead", img: "/input_file_15.png" },
-              { name: "GIRIPRASAD K", role: "Co-Lead", img: "/input_file_16.png" },
-              { name: "JAYASRI S", role: "Documentation Lead", img: "/input_file_17.png" },
-              { name: "PRINCE KEVIN KARTHIK.I", role: "Event Speaker Manager", img: "/input_file_18.png" },
-              { name: "HARSHA VARDHINI R", role: "Event Speaker Management", img: "/input_file_19.png" },
-              { name: "PRIYANGA RADHAKRISHNAN", role: "Design Team", img: "/input_file_20.png" },
+              { name: "R TAZIM SHERIFF", role: "Event Lead", img: "/input_file_14.png", linkedin: "https://www.linkedin.com/in/tazim-sheriff-r-15a355230/" },
+              { name: "J.MUKESHWAR RAUDRA (P r o f e s s o r)", role: "Co-Lead", img: "/input_file_15.png", linkedin: "https://www.linkedin.com/in/mukeshwar-raudra" },
+              { name: "GIRIPRASAD K", role: "Co-Lead", img: "/input_file_16.png", linkedin: "https://www.linkedin.com/in/girii73?utm_source=share_via&utm_content=profile&utm_medium=member_android" },
+              { name: "JAYASRI S", role: "Documentation Lead", img: "/input_file_17.png", linkedin: "https://www.linkedin.com/in/jayasri-s-ai" },
+              { name: "PRINCE KEVIN KARTHIK I", role: "Event Speaker Manager", img: "/input_file_18.png", linkedin: "https://www.linkedin.com/in/princek6" },
+              { name: "HARSHA VARDHINI R", role: "Event Speaker Management", img: "/input_file_19.png", linkedin: "https://www.linkedin.com/in/harsha-vardhini-05783036a?utm_source=share_via&utm_content=profile&utm_medium=member_android" },
+              { name: "PRIYANGA RADHAKRISHNAN", role: "Design Team", img: "/input_file_20.png", linkedin: "https://www.linkedin.com/in/priyanga-radhakrishnan-53b505380?utm_source=share_via&utm_content=profile&utm_medium=member_android" },
               { name: "PULI PHANINDRA", role: "Community Partners Team", img: "/input_file_21.png" },
+              { name: "SARVESH S", role: "Event Speaker Manager", img: "/sarvesh-s.jpeg", linkedin: "https://www.linkedin.com/in/sarvesh-sivasankaran?utm_source=share_via&utm_content=profile&utm_medium=member_android" },
               { name: "SARAH JANE", role: "Tech Operations", seed: "sarah" },
               { name: "VIKRAM SINGH", role: "Creative Director", seed: "vikram" },
               { name: "ANANYA RAO", role: "Community Manager", seed: "ananya" },
@@ -664,12 +681,23 @@ export default function App() {
               >
                 <div className="aspect-[4/5] bg-white/5 border border-white/10 overflow-hidden mb-4 grayscale group-hover:grayscale-0 transition-all duration-700 relative">
                    <div className="absolute inset-0 bg-brand-green/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <img 
-                    src={'img' in volunteer ? volunteer.img : `https://api.dicebear.com/7.x/avataaars/svg?seed=${volunteer.seed}`} 
-                    alt={volunteer.name} 
-                    className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transform group-hover:scale-110 transition-all duration-700" 
-                    referrerPolicy="no-referrer"
-                  />
+                  {volunteer.linkedin ? (
+                    <a href={volunteer.linkedin} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
+                      <img 
+                        src={'img' in volunteer ? volunteer.img : `https://api.dicebear.com/7.x/avataaars/svg?seed=${volunteer.seed}`} 
+                        alt={volunteer.name} 
+                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transform group-hover:scale-110 transition-all duration-700 cursor-pointer" 
+                        referrerPolicy="no-referrer"
+                      />
+                    </a>
+                  ) : (
+                    <img 
+                      src={'img' in volunteer ? volunteer.img : `https://api.dicebear.com/7.x/avataaars/svg?seed=${volunteer.seed}`} 
+                      alt={volunteer.name} 
+                      className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transform group-hover:scale-110 transition-all duration-700" 
+                      referrerPolicy="no-referrer"
+                    />
+                  )}
                 </div>
                 <div className="flex justify-between items-end">
                   <div>
@@ -847,7 +875,7 @@ export default function App() {
       <footer className="py-12 px-6 border-t border-white/5 bg-brand-black">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-[9px] font-mono tracking-widest uppercase text-white/40">
            <div className="flex items-center gap-4">
-             <img src="input_file_5.png" alt="" className="w-8 h-8 object-contain opacity-50 grayscale" referrerPolicy="no-referrer" />
+             <img src="/csf-logo.jpg" alt="" className="w-8 h-8 object-contain opacity-50 grayscale" referrerPolicy="no-referrer" />
              <span className="text-brand-green font-bold">Terminal_v2.5</span>
              <span>// Codesapiens System Execution (c) 2026</span>
            </div>
