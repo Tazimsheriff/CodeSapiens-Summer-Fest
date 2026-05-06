@@ -518,7 +518,7 @@ export default function App() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-5xl sm:text-7xl md:text-8xl lg:text-[10rem] font-display font-black leading-none tracking-tighter text-brand-green italic glow-neon mt-2"
+              className="text-5xl sm:text-7xl md:text-8xl lg:text-[10rem] font-display font-black leading-none tracking-tighter text-brand-green italic glow-neon mt-4 md:mt-10"
             >
               FEST '26
             </motion.h1>
