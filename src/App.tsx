@@ -242,6 +242,7 @@ const BootScreen = ({ onComplete }: { onComplete: () => void }) => {
 export default function App() {
   const [view, setView] = useState<'home' | 'select-path' | 'track-agenda'>('home');
   const [isBooting, setIsBooting] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<() => void>(() => {});
   const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null);
   const [activeTrackShift, setActiveTrackShift] = useState<number>(1); // For the legacy schedule section
@@ -277,6 +278,7 @@ export default function App() {
   const handleBootTransition = (navigationFn: () => void) => {
     setPendingNavigation(() => navigationFn);
     setIsBooting(true);
+    setIsMenuOpen(false);
   };
 
   const navigateToHome = () => setView('home');
@@ -323,12 +325,12 @@ export default function App() {
       <Stars />
 
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 flex justify-between items-center bg-brand-black/20 backdrop-blur-md border-b border-white/5">
+      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 md:py-6 flex justify-between items-center bg-brand-black/20 backdrop-blur-md border-b border-white/5">
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleBootTransition(() => setView('home'))}>
-            <img src="https://i.ibb.co/Wv8FVTGQ/codesapiens-logo.jpg" alt="CSF Logo" className="w-12 h-12 object-contain" referrerPolicy="no-referrer" />
+            <img src="https://i.ibb.co/Wv8FVTGQ/codesapiens-logo.jpg" alt="CSF Logo" className="w-10 h-10 md:w-12 md:h-12 object-contain" referrerPolicy="no-referrer" />
           <div className="flex flex-col">
-            <span className="font-display font-black text-2xl md:text-3xl tracking-tighter leading-none text-white uppercase italic glow-text-sm">CODESAPIENS</span>
-            <span className="text-[10px] font-mono text-brand-green tracking-[0.4em] font-bold uppercase">SUMMER FEST '26</span>
+            <span className="font-display font-black text-xl md:text-3xl tracking-tighter leading-none text-white uppercase italic glow-text-sm">CODESAPIENS</span>
+            <span className="text-[8px] md:text-[10px] font-mono text-brand-green tracking-[0.4em] font-bold uppercase">SUMMER FEST '26</span>
           </div>
         </div>
         
@@ -338,18 +340,52 @@ export default function App() {
           ))}
         </div>
         
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 md:gap-6">
           <div className="hidden lg:flex flex-col items-end">
             <span className="text-[9px] font-mono font-bold text-white uppercase">Google Student</span>
             <span className="text-[8px] font-mono text-white/40 uppercase">Ambassador</span>
           </div>
           <button 
             onClick={() => handleBootTransition(navigateToSelectPath)}
-            className="border border-purple-500 text-purple-400 px-6 py-2 font-black text-[10px] uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+            className="border border-purple-500 text-purple-400 px-4 md:px-6 py-2 font-black text-[9px] md:text-[10px] uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
             {view === 'home' ? 'REGISTER' : 'REGISTERED'}
+          </button>
+          
+          <button 
+            className="md:hidden text-white/60 hover:text-white"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <CheckCircle2 className="rotate-45" size={24} /> : <div className="flex flex-col gap-1 w-6"><div className="h-0.5 bg-current w-full"></div><div className="h-0.5 bg-current w-full"></div><div className="h-0.5 bg-current w-full"></div></div>}
           </button>
         </div>
       </nav>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
+            className="fixed inset-0 z-[45] bg-brand-black flex flex-col items-center justify-center p-6"
+          >
+            <div className="flex flex-col gap-8 text-center">
+              {navLinks.map(link => (
+                <button 
+                  key={link.label} 
+                  onClick={() => {
+                    link.action && link.action();
+                    setIsMenuOpen(false);
+                  }} 
+                  className="text-2xl font-display font-black tracking-widest text-white/40 hover:text-brand-green transition-colors uppercase"
+                >
+                  {link.label}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {view === 'select-path' ? (
         <section className="pt-40 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center">
@@ -360,7 +396,7 @@ export default function App() {
             <ArrowLeft size={14} /> BACK TO HOME
           </button>
 
-          <h1 className="text-4xl md:text-7xl font-display font-black tracking-tighter text-center mb-4">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-black tracking-tighter text-center mb-4">
              <span className="text-brand-cyan glow-text italic">SELECT YOUR PATH</span>
           </h1>
           <p className="text-white/40 font-mono text-sm uppercase tracking-widest text-center mb-20">
@@ -392,7 +428,7 @@ export default function App() {
           </button>
 
           <div className="w-full text-center mb-16">
-            <h1 className={`text-6xl md:text-8xl font-display font-black tracking-tighter mb-4 ${selectedTrack.textColor}`}>
+            <h1 className={`text-5xl md:text-7xl lg:text-8xl font-display font-black tracking-tighter mb-4 ${selectedTrack.textColor}`}>
                {selectedTrack.name}
             </h1>
             <div className={`h-1 w-24 mx-auto mb-8 bg-current ${selectedTrack.textColor}`} />
@@ -409,7 +445,7 @@ export default function App() {
                 target="_blank"
                 rel="noreferrer"
                 whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.05)' }}
-                className="w-full p-6 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between group transition-all"
+                className="w-full p-6 bg-white/5 border border-white/10 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 group transition-all"
               >
                 <div className="flex items-center gap-6">
                         <div className="flex flex-col gap-1">
@@ -457,7 +493,7 @@ export default function App() {
               <motion.h1 
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="text-7xl md:text-[10rem] font-display font-black leading-none tracking-tighter text-white glow-white"
+                className="text-5xl sm:text-7xl md:text-8xl lg:text-[10rem] font-display font-black leading-none tracking-tighter text-white glow-white"
               >
                 SUMMER
               </motion.h1>
@@ -482,7 +518,7 @@ export default function App() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-7xl md:text-[10rem] font-display font-black leading-none tracking-tighter text-brand-green italic glow-neon mt-[-0.2em]"
+              className="text-5xl sm:text-7xl md:text-8xl lg:text-[10rem] font-display font-black leading-none tracking-tighter text-brand-green italic glow-neon mt-2"
             >
               FEST '26
             </motion.h1>
@@ -530,7 +566,7 @@ export default function App() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => handleBootTransition(navigateToSelectPath)}
-          className="cyber-button text-sm px-12 py-5 border-2 relative group overflow-hidden"
+          className="cyber-button text-xs md:text-sm px-8 md:px-12 py-4 md:py-5 border-2 relative group overflow-hidden"
         >
           <span className="relative z-10 font-black">JOIN THE REVOLUTION</span>
           <div className="absolute inset-0 bg-brand-cyan/20 translate-y-full group-hover:translate-y-0 transition-transform" />
@@ -583,7 +619,7 @@ export default function App() {
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="text-5xl md:text-7xl font-display font-black tracking-tighter leading-none mb-4"
+                className="text-3xl sm:text-5xl md:text-7xl font-display font-black tracking-tighter leading-none mb-4"
               >
                 SYSTEM <br/> 
                 <span className="text-stroke text-white group-hover:text-brand-cyan transition-colors">DIAGNOSTICS</span>
@@ -676,7 +712,7 @@ export default function App() {
             </h2>
             
             {/* Shift Tabs */}
-            <div className="flex gap-12 border-b border-white/10 w-full justify-center">
+            <div className="flex gap-4 md:gap-12 border-b border-white/10 w-full justify-center overflow-x-auto no-scrollbar">
               {['Morning', 'Evening'].map((shift) => (
                 <button
                   key={shift}
@@ -751,7 +787,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col items-center text-center mb-20">
             <div className="monospace-label mb-2 uppercase">// Core Contributors // The Nexus</div>
-            <h2 className="text-5xl md:text-8xl font-display font-black tracking-tighter">
+            <h2 className="text-4xl md:text-7xl lg:text-8xl font-display font-black tracking-tighter">
               THE <span className="text-brand-green italic">NEXUS</span>
             </h2>
           </div>
@@ -814,7 +850,7 @@ export default function App() {
             <h2 className="text-4xl font-display font-black tracking-tighter uppercase">COMMUNITY <span className="text-brand-green italic">PARTNERS</span></h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-[1px] bg-white/10 border border-white/10">
+          <div className="flex flex-wrap justify-center gap-4">
             {[
               { name: 'Google Student Ambassador', img: 'https://i.ibb.co/WpqFQshk/gsa.jpg' },
               { name: 'Namma Flutter', img: 'https://i.ibb.co/ZzZJMxsc/Whats-App-Image-2026-05-05-at-9-47-59-flutter.jpg' },
@@ -824,7 +860,7 @@ export default function App() {
             ].map((partner, i) => (
               <div 
                 key={i} 
-                className="h-48 bg-brand-black flex items-center justify-center p-6 transition-all duration-300 group cursor-crosshair border border-white/5"
+                className="w-full sm:w-64 h-48 bg-brand-black flex items-center justify-center p-6 transition-all duration-300 group cursor-crosshair border border-white/5"
               >
                 <img 
                   src={partner.img} 
@@ -919,7 +955,7 @@ export default function App() {
           <div className="inline-block bg-red-600 text-white font-mono text-[10px] font-black uppercase tracking-[0.2em] px-4 py-1 rounded">
              FINAL CALL
           </div>
-          <h2 className="text-5xl md:text-8xl font-display font-black tracking-tight text-brand-cyan">
+          <h2 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-black tracking-tight text-brand-cyan">
              REGISTRATION
           </h2>
           <p className="text-white/60 text-sm md:text-md font-medium tracking-wide">
@@ -982,9 +1018,7 @@ export default function App() {
              <a href="https://github.com/Tazimsheriff/CodeSapiens-Summer-Fest" target="_blank" rel="noopener noreferrer" className="hover:text-brand-green transition-colors">Github_Repo</a>
            </div>
 
-           <div className="text-right">
-             Syntax Error? 0x000FF_OK
-           </div>
+
         </div>
       </footer>
     </>
