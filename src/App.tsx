@@ -13,6 +13,7 @@ import {
   Zap, 
   Code, 
   ChevronRight, 
+  ChevronDown,
   Mail, 
   Github, 
   Twitter, 
@@ -114,31 +115,7 @@ const Stars = () => {
   );
 };
 
-const Countdown = () => {
-  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
-    days: 0, hours: 0, minutes: 0, seconds: 0
-  });
-
-  useEffect(() => {
-    const targetDate = new Date('2026-05-10T10:00:00');
-    
-    const timer = setInterval(() => {
-      const now = new Date();
-      const difference = targetDate.getTime() - now.getTime();
-      
-      const d = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const h = Math.floor((difference / (1000 * 60 * 60)) % 24);
-      const m = Math.floor((difference / 1000 / 60) % 60);
-      const s = Math.floor((difference / 1000) % 60);
-      
-      setTimeLeft({ days: d, hours: h, minutes: m, seconds: s });
-      
-      if (difference < 0) clearInterval(timer);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
+const Countdown = ({ timeLeft }: { timeLeft: { days: number; hours: number; minutes: number; seconds: number } }) => {
   const TimeUnit = ({ label, value }: { label: string; value: number }) => (
     <div className="flex flex-col items-center px-4 md:px-6 py-6 rounded-lg border border-brand-green/40 bg-black/60 backdrop-blur-sm hover:bg-black/80 transition-all duration-300" 
          style={{
@@ -175,12 +152,132 @@ const Tag = ({ type }: { type: string }) => {
   );
 };
 
+const BootScreen = ({ onComplete }: { onComplete: () => void }) => {
+  const [progress, setProgress] = useState(0);
+  const [lines, setLines] = useState<string[]>([]);
+  const bootLines = [
+    "> INITIALIZING SYSTEM...",
+    "> CONNECTING TO CSF_SERVER_2026...",
+    "> LOADING NEURAL NETWORK...",
+    "> DEPLOYING ASSETS...",
+    "> FINALIZING BOOT SEQUENCE...",
+    "> ACCESS GRANTED."
+  ];
+
+  useEffect(() => {
+    let currentLine = 0;
+    const lineInterval = setInterval(() => {
+      if (currentLine < bootLines.length) {
+        setLines(prev => [...prev, bootLines[currentLine]]);
+        currentLine++;
+      } else {
+        clearInterval(lineInterval);
+      }
+    }, 400);
+
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          setTimeout(onComplete, 500);
+          return 100;
+        }
+        return prev + 2;
+      });
+    }, 40);
+
+    return () => {
+      clearInterval(lineInterval);
+      clearInterval(progressInterval);
+    };
+  }, []);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] bg-brand-black flex flex-col items-center justify-center p-6 font-mono"
+    >
+      <div className="w-full max-w-md flex flex-col items-center">
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+          className="mb-8 w-20 h-20 border-2 border-brand-green p-4 relative"
+        >
+          <div className="absolute inset-0 border border-brand-green/20 animate-pulse" />
+          <img src="https://i.ibb.co/Wv8FVTGQ/codesapiens-logo.jpg" alt="Logo" className="w-full h-full object-contain filter invert" referrerPolicy="no-referrer" />
+        </motion.div>
+        
+        <h2 className="text-3xl md:text-4xl font-display font-black tracking-tighter text-white mb-2 uppercase italic glow-text-sm">CODESAPIENS</h2>
+        <div className="text-[10px] text-brand-green font-bold tracking-[0.3em] mb-12 uppercase opacity-80 italic">BOOT_SEQUENCE_V2.6</div>
+        
+        <div className="w-full space-y-2 mb-12 h-32 overflow-hidden flex flex-col justify-end">
+          {lines.map((line, i) => (
+            <motion.div 
+              key={i}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className={`text-[10px] tracking-widest ${line && line.includes('GRANTED') ? 'text-brand-green font-black' : 'text-white/40'}`}
+            >
+              {line}
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="w-full h-1 bg-white/5 relative overflow-hidden">
+          <motion.div 
+            className="absolute top-0 left-0 h-full bg-brand-green shadow-[0_0_10px_#39FF14]"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="flex justify-between w-full mt-2 text-[8px] text-white/20 tracking-tighter uppercase font-bold">
+          <span>{progress}% COMPLETED</span>
+          <span>STABLE_BUILD_X64</span>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 export default function App() {
   const [view, setView] = useState<'home' | 'select-path' | 'track-agenda'>('home');
+  const [isBooting, setIsBooting] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<() => void>(() => {});
   const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null);
   const [activeTrackShift, setActiveTrackShift] = useState<number>(1); // For the legacy schedule section
 
+  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
+    days: 0, hours: 0, minutes: 0, seconds: 0
+  });
+
+  useEffect(() => {
+    const targetDate = new Date('2026-05-10T10:00:00');
+    
+    const timer = setInterval(() => {
+      const now = new Date();
+      const difference = targetDate.getTime() - now.getTime();
+      
+      const d = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const h = Math.floor((difference / (1000 * 60 * 60)) % 24);
+      const m = Math.floor((difference / 1000 / 60) % 60);
+      const s = Math.floor((difference / 1000) % 60);
+      
+      setTimeLeft({ days: d, hours: h, minutes: m, seconds: s });
+      
+      if (difference < 0) clearInterval(timer);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const totalHoursLeft = (timeLeft.days * 24) + timeLeft.hours;
+
   const selectedTrack = selectedTrackId ? TRACKS_FLOW.find(t => t.id === selectedTrackId) : null;
+
+  const handleBootTransition = (navigationFn: () => void) => {
+    setPendingNavigation(() => navigationFn);
+    setIsBooting(true);
+  };
 
   const navigateToHome = () => setView('home');
   const navigateToSelectPath = () => {
@@ -193,38 +290,71 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
+  const navigateToHomeAndScroll = (id: string) => {
+    setView('home');
+    setTimeout(() => {
+      const element = document.querySelector(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
   const navLinks = [
-    { label: 'HOME', href: '#home', action: navigateToHome },
-    { label: 'TRACKS', href: '#schedule', action: navigateToSelectPath },
-    { label: 'AGENDA', href: '#schedule' },
-    { label: 'COMMUNITY', href: '#social' },
+    { label: 'HOME', href: '#home', action: () => handleBootTransition(() => { setView('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }) },
+    { label: 'TRACKS', href: '#schedule', action: () => handleBootTransition(navigateToSelectPath) },
+    { label: 'AGENDA', href: '#schedule', action: () => handleBootTransition(() => navigateToHomeAndScroll('#schedule')) },
+    { label: 'COMMUNITY', href: '#social', action: () => handleBootTransition(() => navigateToHomeAndScroll('#social')) },
   ];
 
-  if (view === 'select-path') {
-    return (
-      <div className="min-h-screen bg-brand-black text-white font-sans overflow-x-hidden relative">
-        <Stars />
-        <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 flex justify-between items-center bg-brand-black/20 backdrop-blur-md border-b border-white/5">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={navigateToSelectPath}>
-            <img src="/csf-logo.jpg" alt="CSF Logo" className="w-10 h-10 object-contain" referrerPolicy="no-referrer" />
-            <div className="flex flex-col">
-              <span className="font-display font-black text-xl tracking-tighter leading-none text-white">CODESAPIENS</span>
-              <span className="text-[8px] font-mono text-brand-green tracking-[0.3em] font-bold uppercase">SUMMER FEST '26</span>
-            </div>
-          </div>
-          <div className="hidden md:flex gap-10 text-[10px] font-mono uppercase tracking-[0.2em] text-white/40">
-             {navLinks.map(link => (
-               <button key={link.label} onClick={() => { 'action' in link && link.action ? link.action() : (link.label !== 'HOME' && (window.location.hash = link.href)); }} className="hover:text-brand-green transition-colors uppercase">{link.label}</button>
-             ))}
-          </div>
-          <button className="border border-purple-500 text-purple-400 px-6 py-2 font-black text-[10px] uppercase tracking-widest">
-            REGISTERED
-          </button>
-        </nav>
+  return (
+    <div className="min-h-screen bg-brand-black overflow-x-hidden font-sans">
+      <AnimatePresence>
+        {isBooting && (
+          <BootScreen 
+            onComplete={() => {
+              setIsBooting(false);
+              pendingNavigation();
+            }} 
+          />
+        )}
+      </AnimatePresence>
+      
+      <Stars />
 
+      {/* Nav */}
+      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 flex justify-between items-center bg-brand-black/20 backdrop-blur-md border-b border-white/5">
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleBootTransition(() => setView('home'))}>
+            <img src="https://i.ibb.co/Wv8FVTGQ/codesapiens-logo.jpg" alt="CSF Logo" className="w-12 h-12 object-contain" referrerPolicy="no-referrer" />
+          <div className="flex flex-col">
+            <span className="font-display font-black text-2xl md:text-3xl tracking-tighter leading-none text-white uppercase italic glow-text-sm">CODESAPIENS</span>
+            <span className="text-[10px] font-mono text-brand-green tracking-[0.4em] font-bold uppercase">SUMMER FEST '26</span>
+          </div>
+        </div>
+        
+        <div className="hidden md:flex gap-10 text-[10px] font-mono uppercase tracking-[0.2em] text-white/40">
+          {navLinks.map(link => (
+            <button key={link.label} onClick={() => link.action && link.action()} className="hover:text-brand-green transition-colors cursor-pointer uppercase">{link.label}</button>
+          ))}
+        </div>
+        
+        <div className="flex items-center gap-6">
+          <div className="hidden lg:flex flex-col items-end">
+            <span className="text-[9px] font-mono font-bold text-white uppercase">Google Student</span>
+            <span className="text-[8px] font-mono text-white/40 uppercase">Ambassador</span>
+          </div>
+          <button 
+            onClick={() => handleBootTransition(navigateToSelectPath)}
+            className="border border-purple-500 text-purple-400 px-6 py-2 font-black text-[10px] uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+            {view === 'home' ? 'REGISTER' : 'REGISTERED'}
+          </button>
+        </div>
+      </nav>
+
+      {view === 'select-path' ? (
         <section className="pt-40 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center">
           <button 
-            onClick={navigateToHome}
+            onClick={() => handleBootTransition(navigateToHome)}
             className="self-start flex items-center gap-2 text-white/40 hover:text-white transition-colors font-mono text-[10px] uppercase tracking-widest mb-12"
           >
             <ArrowLeft size={14} /> BACK TO HOME
@@ -242,7 +372,7 @@ export default function App() {
               <motion.div
                 key={track.id}
                 whileHover={{ y: -10 }}
-                onClick={() => navigateToTrackAgenda(track.id)}
+                onClick={() => handleBootTransition(() => navigateToTrackAgenda(track.id))}
                 className={`p-1 border-2 ${track.color} rounded-2xl cursor-pointer bg-black/40 backdrop-blur-sm group h-96 flex flex-col items-center justify-center relative overflow-hidden`}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -252,35 +382,10 @@ export default function App() {
             ))}
           </div>
         </section>
-      </div>
-    );
-  }
-
-  if (view === 'track-agenda' && selectedTrack) {
-    return (
-      <div className="min-h-screen bg-brand-black text-white font-sans overflow-x-hidden relative">
-        <Stars />
-        <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 flex justify-between items-center bg-brand-black/20 backdrop-blur-md border-b border-white/5">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={navigateToHome}>
-            <img src="/csf-logo.jpg" alt="CSF Logo" className="w-10 h-10 object-contain" referrerPolicy="no-referrer" />
-            <div className="flex flex-col">
-              <span className="font-display font-black text-xl tracking-tighter leading-none text-white">CODESAPIENS</span>
-              <span className="text-[8px] font-mono text-brand-green tracking-[0.3em] font-bold uppercase">SUMMER FEST '26</span>
-            </div>
-          </div>
-          <div className="hidden md:flex gap-10 text-[10px] font-mono uppercase tracking-[0.2em] text-white/40">
-             {navLinks.map(link => (
-               <button key={link.label} onClick={() => { 'action' in link && link.action ? link.action() : (link.label !== 'HOME' && (window.location.hash = link.href)); }} className="hover:text-brand-green transition-colors uppercase">{link.label}</button>
-             ))}
-          </div>
-          <button className="border border-purple-500 text-purple-400 px-6 py-2 font-black text-[10px] uppercase tracking-widest">
-            REGISTERED
-          </button>
-        </nav>
-
+      ) : view === 'track-agenda' && selectedTrack ? (
         <section className="pt-40 pb-20 px-6 max-w-4xl mx-auto flex flex-col items-center min-h-screen">
           <button 
-            onClick={navigateToSelectPath}
+            onClick={() => handleBootTransition(navigateToSelectPath)}
             className="self-start flex items-center gap-2 text-white/40 hover:text-white transition-colors font-mono text-[10px] uppercase tracking-widest mb-16"
           >
             <ArrowLeft size={14} /> BACK TO TRACKS
@@ -321,7 +426,7 @@ export default function App() {
                             </div>
                           </div>
                           <h3 className="text-xl md:text-3xl font-display font-bold leading-tight group-hover:text-brand-green transition-colors">
-                            {session.name}
+                            {session.name.includes(' - ') ? session.name.split(' - ').slice(1).join(' - ') : session.name}
                           </h3>
                         </div>
                 </div>
@@ -330,86 +435,64 @@ export default function App() {
             ))}
           </div>
         </section>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-brand-black overflow-x-hidden font-sans">
-      <Stars />
-      
-      {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6 flex justify-between items-center bg-brand-black/20 backdrop-blur-md border-b border-white/5">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
-            <img src="/csf-logo.jpg" alt="CSF Logo" className="w-10 h-10 object-contain" referrerPolicy="no-referrer" />
-          <div className="flex flex-col">
-            <span className="font-display font-black text-xl tracking-tighter leading-none text-white">CODESAPIENS</span>
-            <span className="text-[8px] font-mono text-brand-green tracking-[0.3em] font-bold uppercase">SUMMER FEST '26</span>
-          </div>
-        </div>
+      ) : (
+        <>
+          {/* Hero */}
+          <section id="home" className="relative h-screen flex flex-col items-center justify-center px-6 overflow-hidden pt-32 md:pt-40 hero-bg">
+        {/* Textures */}
+        <div className="absolute inset-0 scanlines opacity-5 z-[1]" />
+        <div className="absolute inset-0 dot-grid opacity-5 z-[1]" />
         
-        <div className="hidden md:flex gap-10 text-[10px] font-mono uppercase tracking-[0.2em] text-white/40">
-          <a href="#home" className="hover:text-brand-green transition-colors cursor-pointer" onClick={(e) => { e.preventDefault(); window.scrollTo(0, 0); }}>HOME</a>
-          <a href="#schedule" className="hover:text-brand-green transition-colors cursor-pointer" onClick={(e) => { e.preventDefault(); navigateToSelectPath(); }}>TRACKS</a>
-          <a href="#schedule" className="hover:text-brand-green transition-colors">AGENDA</a>
-          <a href="#social" className="hover:text-brand-green transition-colors">COMMUNITY</a>
-        </div>
-        
-        <div className="flex items-center gap-6">
-          <div className="hidden lg:flex flex-col items-end">
-            <span className="text-[9px] font-mono font-bold text-white uppercase">Google Student</span>
-            <span className="text-[8px] font-mono text-white/40 uppercase">Ambassador</span>
-          </div>
-          <button 
-            onClick={navigateToSelectPath}
-            className="border border-purple-500 text-purple-400 px-6 py-2 font-black text-[10px] uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-            REGISTER
-          </button>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <section id="home" className="relative h-screen flex flex-col items-center justify-center px-6 overflow-hidden pt-20">
-        <div className="absolute inset-0 bg-radial-gradient from-brand-green/10 to-transparent pointer-events-none" />
-        
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1 }}
-          className="relative w-48 h-48 md:w-64 md:h-64 mb-12 flex items-center justify-center p-4"
-        >
-          {/* Animated glow background */}
-          <div className="absolute inset-0 bg-brand-green/20 blur-[60px] rounded-full animate-pulse" />
-          <img 
-            src="/csf-logo.jpg" 
-            alt="CSF" 
-            className="w-full h-full object-contain relative z-10 filter drop-shadow-[0_0_30px_rgba(0,255,0,0.5)]" 
-            referrerPolicy="no-referrer"
-          />
-        </motion.div>
-
-        <div className="text-center space-y-6 relative z-10 mb-12">
-          <motion.h1 
+        <div className="text-center space-y-4 relative z-10 mb-12">
+          <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-5xl font-display font-black leading-none tracking-tight text-white/40 mb-4 uppercase"
+            className="text-4xl md:text-5xl font-display font-black leading-none tracking-[0.2em] text-white glow-white mb-2 italic uppercase"
           >
             CODESAPIENS
-          </motion.h1>
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-6xl md:text-[8rem] font-display font-black leading-none tracking-tight text-white flex flex-col items-center"
-          >
-            <span className="flex items-center gap-2">SUMMER <img src="/csf-logo.jpg" className="w-12 md:w-20 h-auto animate-spin-slow filter grayscale invert" alt="logo" referrerPolicy="no-referrer" /></span>
-            <span className="text-brand-green italic">FEST '26</span>
-          </motion.h1>
+          </motion.h2>
+
+          <div className="flex flex-col items-center">
+            <div className="flex items-center gap-4 md:gap-8">
+              <motion.h1 
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="text-7xl md:text-[10rem] font-display font-black leading-none tracking-tighter text-white glow-white"
+              >
+                SUMMER
+              </motion.h1>
+              
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3 }}
+                className="relative w-16 h-16 md:w-32 md:h-32 p-2 border border-brand-green/30 rounded-lg bg-brand-green/5 backdrop-blur-sm"
+              >
+                 <div className="absolute inset-0 bg-brand-green/10 blur-xl rounded-full animate-pulse" />
+                 <img 
+                    src="https://i.ibb.co/wh3SnnB7/csf-logo.jpg" 
+                    alt="CSF" 
+                    className="w-full h-full object-contain relative z-10 filter drop-shadow-[0_0_15px_rgba(57,255,20,0.5)]" 
+                    referrerPolicy="no-referrer"
+                  />
+              </motion.div>
+            </div>
+
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-7xl md:text-[10rem] font-display font-black leading-none tracking-tighter text-brand-green italic glow-neon mt-[-0.2em]"
+            >
+              FEST '26
+            </motion.h1>
+          </div>
 
           <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="text-white/40 text-lg md:text-xl font-mono tracking-widest uppercase"
+            className="text-[#4a7a4a] text-sm md:text-base font-mono tracking-[0.1em] uppercase cursor-blink pt-8"
           >
             Explore. Evolve. Engineer. // The Student Community.
           </motion.p>
@@ -446,21 +529,39 @@ export default function App() {
         <motion.button 
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={navigateToSelectPath}
+          onClick={() => handleBootTransition(navigateToSelectPath)}
           className="cyber-button text-sm px-12 py-5 border-2 relative group overflow-hidden"
         >
-          <span className="relative z-10 font-black">JOIN THE REBOOT</span>
+          <span className="relative z-10 font-black">JOIN THE REVOLUTION</span>
           <div className="absolute inset-0 bg-brand-cyan/20 translate-y-full group-hover:translate-y-0 transition-transform" />
         </motion.button>
 
         {/* Floating background elements for animations */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-40">
-          <ArrowRight size={24} className="rotate-90 text-brand-green" />
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+          <motion.div
+            animate={{ 
+              y: [0, 12, 0],
+              opacity: [0.4, 1, 0.4],
+              scale: [0.95, 1.05, 0.95]
+            }}
+            transition={{ 
+              duration: 2, 
+              repeat: Infinity, 
+              ease: "easeInOut" 
+            }}
+            className="text-brand-green glow-neon cursor-pointer"
+            onClick={() => {
+              const statsSection = document.getElementById('stats');
+              statsSection?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
+            <ChevronDown size={36} strokeWidth={3} />
+          </motion.div>
         </div>
       </section>
 
       {/* Stats/Countdown Mini */}
-      <section className="py-16 md:py-24 bg-black flex justify-center items-center">
+      <section id="stats" className="py-16 md:py-24 bg-black flex justify-center items-center relative z-10">
         <div className="max-w-6xl w-full px-6 text-center">
           <div className="mb-12 md:mb-16">
             <h3 className="text-sm md:text-base font-mono uppercase tracking-[0.3em] text-brand-green mb-4">// SYSTEM INITIALIZATION //</h3>
@@ -468,7 +569,7 @@ export default function App() {
               EVENT LAUNCHES IN
             </h2>
           </div>
-          <Countdown />
+          <Countdown timeLeft={timeLeft} />
         </div>
       </section>
 
@@ -657,22 +758,15 @@ export default function App() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { name: "R TAZIM SHERIFF", role: "Event Lead", img: "/input_file_14.png", linkedin: "https://www.linkedin.com/in/tazim-sheriff-r-15a355230/" },
-              { name: "J.MUKESHWAR RAUDRA (P r o f e s s o r)", role: "Co-Lead", img: "/input_file_15.png", linkedin: "https://www.linkedin.com/in/mukeshwar-raudra" },
-              { name: "GIRIPRASAD K", role: "Co-Lead", img: "/input_file_16.png", linkedin: "https://www.linkedin.com/in/girii73?utm_source=share_via&utm_content=profile&utm_medium=member_android" },
-              { name: "JAYASRI S", role: "Documentation Lead", img: "/input_file_17.png", linkedin: "https://www.linkedin.com/in/jayasri-s-ai" },
-              { name: "PRINCE KEVIN KARTHIK I", role: "Event Speaker Manager", img: "/input_file_18.png", linkedin: "https://www.linkedin.com/in/princek6" },
-              { name: "HARSHA VARDHINI R", role: "Event Speaker Management", img: "/input_file_19.png", linkedin: "https://www.linkedin.com/in/harsha-vardhini-05783036a?utm_source=share_via&utm_content=profile&utm_medium=member_android" },
-              { name: "PRIYANGA RADHAKRISHNAN", role: "Design Team", img: "/input_file_20.png", linkedin: "https://www.linkedin.com/in/priyanga-radhakrishnan-53b505380?utm_source=share_via&utm_content=profile&utm_medium=member_android" },
-              { name: "PULI PHANINDRA", role: "Community Partners Team", img: "/input_file_21.png" },
-              { name: "SARVESH S", role: "Event Speaker Manager", img: "/sarvesh-s.jpeg", linkedin: "https://www.linkedin.com/in/sarvesh-sivasankaran?utm_source=share_via&utm_content=profile&utm_medium=member_android" },
-              { name: "SARAH JANE", role: "Tech Operations", seed: "sarah" },
-              { name: "VIKRAM SINGH", role: "Creative Director", seed: "vikram" },
-              { name: "ANANYA RAO", role: "Community Manager", seed: "ananya" },
-              { name: "ROHIT KUMAR", role: "Web Developer", seed: "rohit" },
-              { name: "LISA CHEN", role: "Content Curator", seed: "lisa" },
-              { name: "DAVID MILLER", role: "Public Relations", seed: "david" },
-              { name: "SOFIA KHAN", role: "Sponsorships", seed: "sofia" }
+              { name: "R TAZIM SHERIFF", role: "Event Lead", img: "https://i.ibb.co/ZzrDNtSm/tazzz.jpg", linkedin: "https://www.linkedin.com/in/tazim-sheriff-r-15a355230/" },
+              { name: "J.MUKESHWAR RAUDRA (P r o f e s s o r)", role: "Co-Lead", img: "https://i.ibb.co/1GjL7ssp/proffesor.jpg", linkedin: "https://www.linkedin.com/in/mukeshwar-raudra" },
+              { name: "GIRIPRASAD K", role: "Co-Lead", img: "https://i.ibb.co/Txt7xt4P/giri.jpg", linkedin: "https://www.linkedin.com/in/girii73?utm_source=share_via&utm_content=profile&utm_medium=member_android" },
+              { name: "JAYASRI S", role: "Documentation Lead", img: "https://i.ibb.co/rKkFTNT2/jayasree.jpg", linkedin: "https://www.linkedin.com/in/jayasri-s-ai" },
+              { name: "PRINCE KEVIN KARTHIK I", role: "Event Speaker Manager", img: "https://i.ibb.co/VWrj4T7M/prince.jpg", linkedin: "https://www.linkedin.com/in/princek6" },
+              { name: "HARSHA VARDHINI R", role: "Event Speaker Management", img: "https://i.ibb.co/5X3G6ZR9/harsha.jpg", linkedin: "https://www.linkedin.com/in/harsha-vardhini-05783036a?utm_source=share_via&utm_content=profile&utm_medium=member_android" },
+              { name: "PRIYANGA RADHAKRISHNAN", role: "Design Team", img: "https://i.ibb.co/KxVT5jXm/Priyanga.jpg", linkedin: "https://www.linkedin.com/in/priyanga-radhakrishnan-53b505380?utm_source=share_via&utm_content=profile&utm_medium=member_android" },
+              { name: "PULI PHANINDRA", role: "Community Partners Team", img: "https://i.ibb.co/tw4KFD4G/puli-og.jpg", linkedin: "https://www.linkedin.com/in/puli-phanindhra-475ba3375/" },
+              { name: "SARVESH S", role: "Event Speaker Manager", img: "https://i.ibb.co/r2QMFLZk/sarvesh-s.jpg", linkedin: "https://www.linkedin.com/in/sarvesh-sivasankaran?utm_source=share_via&utm_content=profile&utm_medium=member_android" }
             ].map((volunteer, i) => (
               <motion.div 
                 key={i}
@@ -684,7 +778,7 @@ export default function App() {
                   {volunteer.linkedin ? (
                     <a href={volunteer.linkedin} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
                       <img 
-                        src={'img' in volunteer ? volunteer.img : `https://api.dicebear.com/7.x/avataaars/svg?seed=${volunteer.seed}`} 
+                        src={volunteer.img} 
                         alt={volunteer.name} 
                         className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transform group-hover:scale-110 transition-all duration-700 cursor-pointer" 
                         referrerPolicy="no-referrer"
@@ -692,7 +786,7 @@ export default function App() {
                     </a>
                   ) : (
                     <img 
-                      src={'img' in volunteer ? volunteer.img : `https://api.dicebear.com/7.x/avataaars/svg?seed=${volunteer.seed}`} 
+                      src={volunteer.img} 
                       alt={volunteer.name} 
                       className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transform group-hover:scale-110 transition-all duration-700" 
                       referrerPolicy="no-referrer"
@@ -720,20 +814,22 @@ export default function App() {
             <h2 className="text-4xl font-display font-black tracking-tighter uppercase">COMMUNITY <span className="text-brand-green italic">PARTNERS</span></h2>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-[1px] bg-white/10 border border-white/10">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-[1px] bg-white/10 border border-white/10">
             {[
-              { name: 'Google Student Ambassador', img: '/input_file_11.png' },
-              { name: 'Namma Flutter', img: '/input_file_12.png' },
-              { name: 'Exora', img: '/input_file_13.png' }
+              { name: 'Google Student Ambassador', img: 'https://i.ibb.co/WpqFQshk/gsa.jpg' },
+              { name: 'Namma Flutter', img: 'https://i.ibb.co/ZzZJMxsc/Whats-App-Image-2026-05-05-at-9-47-59-flutter.jpg' },
+              { name: 'Nexora', img: 'https://i.ibb.co/rfTnMRqy/Whats-App-Image-2026-05-05-at-9-47-59-PM.jpg' },
+              { name: 'Microsoft Learn Student Ambassador', img: 'https://i.ibb.co/gLjbdWGN/MIC-Student-Ambassadors-Badge-Program-Color-BG.png' },
+              { name: 'CSF', img: 'https://i.ibb.co/wh3SnnB7/csf-logo.jpg' }
             ].map((partner, i) => (
               <div 
                 key={i} 
-                className="h-40 bg-brand-black flex items-center justify-center p-8 transition-all duration-300 group cursor-crosshair border border-white/5"
+                className="h-48 bg-brand-black flex items-center justify-center p-6 transition-all duration-300 group cursor-crosshair border border-white/5"
               >
                 <img 
                   src={partner.img} 
                   alt={partner.name} 
-                  className="max-w-full max-h-full object-contain grayscale opacity-60 group-hover:opacity-100 group-hover:grayscale-0 transition-all scale-110" 
+                  className="max-w-[85%] max-h-[85%] object-contain opacity-80 group-hover:opacity-100 transition-all" 
                   referrerPolicy="no-referrer"
                 />
               </div>
@@ -828,7 +924,7 @@ export default function App() {
           </h2>
           <p className="text-white/60 text-sm md:text-md font-medium tracking-wide">
              This is your last chance to be part of the Google Student Ambassadors history. <br/>
-             Registration closes in <span className="text-pink-500 font-bold">48 hours.</span>
+             Registration closes in <span className="text-pink-500 font-bold">{totalHoursLeft} {totalHoursLeft === 1 ? 'hour' : 'hours'}.</span>
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white/5 border border-white/10 p-12 rounded-3xl mt-12 text-left">
@@ -858,7 +954,7 @@ export default function App() {
 
              <div className="col-span-full pt-12 flex flex-col items-center gap-4">
                <button 
-                 onClick={navigateToSelectPath}
+                 onClick={() => handleBootTransition(navigateToSelectPath)}
                  className="w-full max-w-md border-2 border-brand-cyan text-brand-cyan py-5 font-display font-black text-xl tracking-tight hover:bg-brand-cyan hover:text-black transition-all"
                >
                  START REGISTRATION
@@ -875,15 +971,15 @@ export default function App() {
       <footer className="py-12 px-6 border-t border-white/5 bg-brand-black">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-[9px] font-mono tracking-widest uppercase text-white/40">
            <div className="flex items-center gap-4">
-             <img src="/csf-logo.jpg" alt="" className="w-8 h-8 object-contain opacity-50 grayscale" referrerPolicy="no-referrer" />
+             <img src="https://i.ibb.co/Wv8FVTGQ/codesapiens-logo.jpg" alt="" className="w-8 h-8 object-contain opacity-80" referrerPolicy="no-referrer" />
              <span className="text-brand-green font-bold">Terminal_v2.5</span>
              <span>// Codesapiens System Execution (c) 2026</span>
            </div>
            
            <div className="flex gap-8">
-             <a href="#" className="hover:text-brand-green transition-colors">X_Twitter</a>
-             <a href="#" className="hover:text-brand-green transition-colors">Discord_Server</a>
-             <a href="#" className="hover:text-brand-green transition-colors">Github_Repo</a>
+             <a href="https://www.codesapiens.in/" target="_blank" rel="noopener noreferrer" className="hover:text-brand-green transition-colors">Official_Website</a>
+             <a href="https://discord.gg/BEUfEjp6X" target="_blank" rel="noopener noreferrer" className="hover:text-brand-green transition-colors">Discord_Server</a>
+             <a href="https://github.com/Tazimsheriff/CodeSapiens-Summer-Fest" target="_blank" rel="noopener noreferrer" className="hover:text-brand-green transition-colors">Github_Repo</a>
            </div>
 
            <div className="text-right">
@@ -891,6 +987,8 @@ export default function App() {
            </div>
         </div>
       </footer>
-    </div>
-  );
+    </>
+  )}
+</div>
+);
 }
