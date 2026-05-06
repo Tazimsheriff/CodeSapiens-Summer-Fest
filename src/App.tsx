@@ -341,10 +341,6 @@ export default function App() {
         </div>
         
         <div className="flex items-center gap-4 md:gap-6">
-          <div className="hidden lg:flex flex-col items-end">
-            <span className="text-[9px] font-mono font-bold text-white uppercase">Google Student</span>
-            <span className="text-[8px] font-mono text-white/40 uppercase">Ambassador</span>
-          </div>
           <button 
             onClick={() => handleBootTransition(navigateToSelectPath)}
             className="border border-purple-500 text-purple-400 px-4 md:px-6 py-2 font-black text-[9px] md:text-[10px] uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
