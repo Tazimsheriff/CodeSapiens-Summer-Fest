@@ -77,9 +77,9 @@ const TRACKS_FLOW: Track[] = [
     textColor: 'text-green-500',
     sessions: [
       { name: 'Subiksha A - OS and Networks', time: '10:00 AM - 11:00 AM', link: 'https://tinyurl.com/CSF-Track-3-Speaker-1', type: 'SPEAKER' },
-      { name: 'Subikeesh M - E-SIM Simulation Workshop', time: '11:10 AM - 12:10 PM', link: 'https://tinyurl.com/CSF-Track-3-Workshop', type: 'WORKSHOP' },
+      { name: 'Lochan Pokali - DBMS Essential', time: '11:10 AM - 12:10 PM', link: 'https://tinyurl.com/CSF-Track-3-Speaker-2', type: 'SPEAKER' },
       { name: 'Haritha Sivasankaran - Clean Code and Refactoring', time: '3:00 PM - 4:30 PM', link: 'https://tinyurl.com/CSF-Track-3-Contest', type: 'CONTEST' },
-      { name: 'Lochan Pokali - DBMS Essential', time: '4:40 PM - 5:30 PM', link: 'https://tinyurl.com/CSF-Track-3-Speaker-2', type: 'SPEAKER' },
+      { name: 'Subikeesh M - E-SIM Simulation Workshop', time: '4:50 PM - 5:30 PM', link: 'https://tinyurl.com/CSF-Track-3-Workshop', type: 'WORKSHOP' },
     ]
   }
 ];
