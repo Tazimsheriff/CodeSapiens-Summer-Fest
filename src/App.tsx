@@ -258,14 +258,16 @@ export default function App() {
       const now = new Date();
       const difference = targetDate.getTime() - now.getTime();
       
-      const d = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const h = Math.floor((difference / (1000 * 60 * 60)) % 24);
-      const m = Math.floor((difference / 1000 / 60) % 60);
-      const s = Math.floor((difference / 1000) % 60);
-      
-      setTimeLeft({ days: d, hours: h, minutes: m, seconds: s });
-      
-      if (difference < 0) clearInterval(timer);
+      if (difference <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        clearInterval(timer);
+      } else {
+        const d = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const h = Math.floor((difference / (1000 * 60 * 60)) % 24);
+        const m = Math.floor((difference / 1000 / 60) % 60);
+        const s = Math.floor((difference / 1000) % 60);
+        setTimeLeft({ days: d, hours: h, minutes: m, seconds: s });
+      }
     }, 1000);
 
     return () => clearInterval(timer);
@@ -954,11 +956,20 @@ export default function App() {
              FINAL CALL
           </div>
           <h2 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-black tracking-tight text-brand-cyan">
-             REGISTRATION
+             {totalHoursLeft > 0 ? 'REGISTRATION' : 'REGISTRATION CLOSED'}
           </h2>
           <p className="text-white/60 text-sm md:text-md font-medium tracking-wide">
-             This is your last chance to be part of the Google Student Ambassadors history. <br/>
-             Registration closes in <span className="text-pink-500 font-bold">{totalHoursLeft} {totalHoursLeft === 1 ? 'hour' : 'hours'}.</span>
+             {totalHoursLeft > 0 ? (
+               <>
+                 This is your last chance to be part of the Google Student Ambassadors history. <br/>
+                 Registration closes in <span className="text-pink-500 font-bold">{totalHoursLeft} {totalHoursLeft === 1 ? 'hour' : 'hours'}.</span>
+               </>
+             ) : (
+               <>
+                 The event has concluded. Thank you for being part of the CodeSapiens Summer Fest '26 journey. <br/>
+                 <span className="text-brand-green font-bold uppercase tracking-widest">See you in the next session!</span>
+               </>
+             )}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white/5 border border-white/10 p-12 rounded-3xl mt-12 text-left">
@@ -988,10 +999,15 @@ export default function App() {
 
              <div className="col-span-full pt-12 flex flex-col items-center gap-4">
                <button 
-                 onClick={() => handleBootTransition(navigateToSelectPath)}
-                 className="w-full max-w-md border-2 border-brand-cyan text-brand-cyan py-5 font-display font-black text-xl tracking-tight hover:bg-brand-cyan hover:text-black transition-all"
+                 onClick={() => totalHoursLeft > 0 && handleBootTransition(navigateToSelectPath)}
+                 disabled={totalHoursLeft <= 0}
+                 className={`w-full max-w-md border-2 py-5 font-display font-black text-xl tracking-tight transition-all ${
+                   totalHoursLeft > 0 
+                   ? 'border-brand-cyan text-brand-cyan hover:bg-brand-cyan hover:text-black' 
+                   : 'border-white/10 text-white/20 cursor-not-allowed'
+                 }`}
                >
-                 START REGISTRATION
+                 {totalHoursLeft > 0 ? 'START REGISTRATION' : 'REGISTRATION CLOSED'}
                </button>
                <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest text-center">
                  By registering, you agree to our Terms of Service. No spam, just code.
